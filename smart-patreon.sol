@@ -33,4 +33,47 @@ contract SmartPatreon {
     
     uint constant monthlyDonation = 12; // 0.083, but do I need this constant? 
 
+    //modifiers 
+    modifier onlyPatreons 
+        if (msg.sender == creator) 
+            revert(); 
+            _;
+    }
+
+    modifier onlyCreator { 
+        if (msg.sender != creator) 
+            revert(); 
+            _; 
+    }
+
+    //event logs for front-end calls
+    event LOG_SingleDonation(uint donationAmount, address donor);
+    event LOG_Withdraw(uint emptyBalance);
+    event LOG_creatorAddressAndSender(address factoryAddress, address creator);
+    event LOG_ShowAllMonthlyDonationsOneUser(uint totalDonationStart, uint totalRemaining, uint monthsRemaining, uint paymentPerMonth, address donor);
+    event LOG_FullLedger(uint allPatreonsEver, uint patreonsNow, uint patreonsFinished, uint patreonsCancelled, uint totalDonationsEver, uint monthlyDonationsAvailable, uint totalDonationsWithdrawn, uint totalDonationsCancelled, uint totalEtherEver, uint totalEtherNow, uint totalEtherWithdrawn, uint totalEtherCancelled, uint monthlyDonation);
+    event LOG_ContractBalance(uint contractBalance);
+
+    struct donationData {
+        address donor;
+        uint totalDonationStart;
+        uint totalRemaining;
+        uint monthsRemaining;
+        uint paymentPerMonth;
+    }
+
+    donationData[] public donors;
+
+    // constructor function
+    function smartPatron(){
+
+    }
+
+    function oneTimeContribution() {
+    }
+
+    function monthlyContribution() {
+    }
+
+
 }
