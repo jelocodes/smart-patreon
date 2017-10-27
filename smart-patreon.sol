@@ -46,7 +46,7 @@ contract SmartPatreon {
             _; 
     }
 
-    //event logs for front-end calls
+    //events for front-end calls
     event LOG_SingleDonation(uint donationAmount, address donor);
     event LOG_Withdraw(uint emptyBalance);
     event LOG_creatorAddressAndSender(address factoryAddress, address creator);
@@ -64,15 +64,40 @@ contract SmartPatreon {
 
     donationData[] public donors;
 
-    // constructor function
-    function smartPatron(){
+    mapping (address => uint[]) public donationID; //one address could submit multiple yearly donations if they want. Would have to add donationID into here to differentiate donations from the same address
+    
+    mapping (address => donationData) public patreonDonations; //This could be useful for quick lookup of donations for cancellation purposes. Keep for now
 
+    // constructor function
+    function smartPatreon(bytes32 _name, uint _contractNumber) payable {
+        contractNumber = _contractNumber;
+        PatreonFactory pf = PatreonFactory(msg.sender); // need to create smart contract factory function
+        name = _name;
+        creator = pf.getOriginalCreator(contractNumber); //need to get the original creator's address (not the contract address) for setting their limits and approval withdrawals
+        LOG_creatorAddressAndSender(msg.sender, creator);
     }
 
-    function oneTimeContribution() {
+    function setOneTimeContribution(uint setAmountInWei) onlyCreator  returns(uint){
+        singleDonationAmount = setAmountInWei;
+        return singleDonationAmount;
+    }
+
+    function setMonthlyContribution(uint setMonthlyInWei) onlyCreator  returns(uint) {
+        monthlyDonationAmount = setMonthlyInWei; //you can have the front end display it in ether, but it will be sent in wei and converted on the front end
+        return monthlyDonationAmount;
+    }
+
+    function oneTimeContribution() payable onlyPatreons returns(uint){
+        if (msg.value != singleDonationAmount) revert(); 
+            //this.balance = this.balance + msg.value;
+        
+          //  msg.sender.send()       
+        LOG_SingleDonation(this.balance, msg.sender);       
+        return this.balance;
     }
 
     function monthlyContribution() {
+
     }
 
 
