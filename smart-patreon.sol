@@ -34,7 +34,7 @@ contract SmartPatreon {
     uint constant monthlyDonation = 12; // 0.083, but do I need this constant? 
 
     //modifiers 
-    modifier onlyPatreons 
+    modifier onlyPatreons {
         if (msg.sender == creator) 
             revert(); 
             _;
@@ -251,23 +251,54 @@ contract SmartPatreon {
                     monthlyCounter++;
                 }
                 
-            } else if (monthlyCounter == 8 || monthlyCounter == 10 || monthlyCounter == 3 || monthlyCounter == 5) {
+                } else if (monthlyCounter == 8 || monthlyCounter == 10 || monthlyCounter == 3 || monthlyCounter == 5) {
                 dynamicFirstOfMonth += secondsInOneMonth30;
                 monthlyCounter++;
-            } else {
-                if (now > leapYearCounter){
-                    uint leapYearCycle = 126230400;//this number is 4 years plus a day, and it reoccuring on a consistent basis
-                    dynamicFirstOfMonth = dynamicFirstOfMonth + secondsInOneMonth29;
-                    leapYearCounter += leapYearCycle;
-                     monthlyCounter++;
                 } else {
-                    dynamicFirstOfMonth += secondsInOneMonth28;
-                    monthlyCounter++;
+                    if (now > leapYearCounter){
+                        uint leapYearCycle = 126230400;//this number is 4 years plus a day, and it reoccuring on a consistent basis
+                        dynamicFirstOfMonth = dynamicFirstOfMonth + secondsInOneMonth29;
+                        leapYearCounter += leapYearCycle;
+                        monthlyCounter++;
+                    } else {
+                        dynamicFirstOfMonth += secondsInOneMonth28;
+                        monthlyCounter++;
+                    }
                 }
-            }
-        }
-        
-        
+            }       
         
     }
+
+}
+
+contract PatreonFactory {
+    bytes32[] names;
+    address[] newContracts;
+    address[] originalCreators;
+    
+    address factoryAddress = this;
+    
+    event LOG_NewContractAddress (address theNewcontract, address theContractCreator);
+
+    function createContract (bytes32 name) returns(address, bytes32, uint, address) {
+        uint contractNumber = newContracts.length;
+        originalCreators.push(msg.sender);
+        address newContract = new SmartPatreon(name, contractNumber);
+        newContracts.push(newContract);
+        names.push(name);
+        LOG_NewContractAddress (newContract, msg.sender);
+        return (newContract, name, contractNumber, msg.sender);
+    } 
+
+    function getName(uint i) constant returns(bytes32 contractName) {
+        return names[i];
+    }
+    function getcontractAddressAtIndex(uint i) constant returns(address contractAddress) {
+        return newContracts[i];
+    }
+    
+    function getOriginalCreator(uint i) constant returns (address originalCreator) {
+        return originalCreators[i];
+    }
+}
 
